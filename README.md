@@ -1,6 +1,8 @@
 # Chat Summarizer System
 
 A comprehensive chat summarization system built with FastAPI, LangChain, OpenAI, Redis, and HuggingFace transformers. This system provides advanced chat analysis capabilities including sentiment analysis, topic classification, and AI-powered summarization.
+<img width="1898" height="874" alt="Screenshot 2025-08-01 102040" src="https://github.com/user-attachments/assets/89f3c387-dbbe-4b9e-b98d-b6d603bdc8c8" />
+
 
 ## 🚀 Features
 
