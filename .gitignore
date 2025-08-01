@@ -1,0 +1,11 @@
+env_example.txt
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pywz
+*.pyzw
+venv/
