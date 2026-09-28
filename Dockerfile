@@ -1,30 +1,21 @@
-# Dockerfile for ChatSummerizer (FastAPI + optional Redis)
-# Works for Linux and Windows (Docker Desktop uses Linux containers by default)
-
 FROM python:3.12-slim
 
-# Set workdir
 WORKDIR /app
+ENV PYTHONUNBUFFERED=1 HOST=0.0.0.0
 
-# Install system dependencies (if needed)
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements and install
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# For Windows users: if you use requirements_windows.txt, uncomment below
-# COPY requirements_windows.txt ./
-# RUN pip install --no-cache-dir -r requirements_windows.txt
+COPY chat_summarizer ./chat_summarizer
+COPY templates ./templates
+COPY static ./static
+COPY main.py ./
 
-# Copy app code
-COPY . .
+RUN useradd --create-home appuser
+USER appuser
 
-# Expose FastAPI port
 EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"
 
-# Set environment variables (can be overridden by docker-compose or .env)
-ENV PYTHONUNBUFFERED=1
-
-# Entrypoint
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"] 
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
