@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+
+from pydantic import BaseModel, Field
+
+MAX_TEXT_LENGTH = 5000
 
 
 class Role(str, Enum):
@@ -29,19 +31,19 @@ class TopicCategory(str, Enum):
 
 class ChatMessage(BaseModel):
     """Model for individual chat messages"""
-    session_id: str = Field(..., description="Unique session identifier")
+    session_id: str = Field(..., min_length=1, max_length=128, description="Unique session identifier")
     role: Role = Field(..., description="Message role (user/assistant)")
-    content: str = Field(..., description="Message content")
+    content: str = Field(..., min_length=1, max_length=MAX_TEXT_LENGTH, description="Message content")
     timestamp: datetime = Field(default_factory=datetime.now, description="Message timestamp")
-    message_id: Optional[str] = Field(None, description="Unique message identifier")
-    sentiment: Optional[Sentiment] = Field(None, description="Sentiment analysis result")
-    topic: Optional[TopicCategory] = Field(None, description="Topic classification result")
+    message_id: str | None = Field(None, description="Unique message identifier")
+    sentiment: Sentiment | None = Field(None, description="Sentiment analysis result")
+    topic: TopicCategory | None = Field(None, description="Topic classification result")
 
 
 class ChatSession(BaseModel):
     """Model for chat sessions"""
     session_id: str = Field(..., description="Unique session identifier")
-    messages: List[ChatMessage] = Field(default_factory=list, description="List of messages in the session")
+    messages: list[ChatMessage] = Field(default_factory=list, description="List of messages in the session")
     created_at: datetime = Field(default_factory=datetime.now, description="Session creation timestamp")
     updated_at: datetime = Field(default_factory=datetime.now, description="Session last update timestamp")
 
@@ -49,7 +51,7 @@ class ChatSession(BaseModel):
 class SummaryRequest(BaseModel):
     """Model for summary generation requests"""
     session_id: str = Field(..., description="Session ID to summarize")
-    max_length: Optional[int] = Field(500, description="Maximum summary length")
+    max_length: int = Field(500, ge=20, le=2000, description="Maximum summary length in words")
 
 
 class SummaryResponse(BaseModel):
@@ -62,8 +64,8 @@ class SummaryResponse(BaseModel):
 
 class SentimentAnalysisRequest(BaseModel):
     """Model for sentiment analysis requests"""
-    text: str = Field(..., description="Text to analyze")
-    session_id: Optional[str] = Field(None, description="Session ID for context")
+    text: str = Field(..., min_length=1, max_length=MAX_TEXT_LENGTH, description="Text to analyze")
+    session_id: str | None = Field(None, description="Session ID for context")
 
 
 class SentimentAnalysisResponse(BaseModel):
@@ -71,13 +73,13 @@ class SentimentAnalysisResponse(BaseModel):
     text: str = Field(..., description="Analyzed text")
     sentiment: Sentiment = Field(..., description="Detected sentiment")
     confidence: float = Field(..., description="Confidence score")
-    session_id: Optional[str] = Field(None, description="Session ID")
+    session_id: str | None = Field(None, description="Session ID")
 
 
 class TopicClassificationRequest(BaseModel):
     """Model for topic classification requests"""
-    text: str = Field(..., description="Text to classify")
-    session_id: Optional[str] = Field(None, description="Session ID for context")
+    text: str = Field(..., min_length=1, max_length=MAX_TEXT_LENGTH, description="Text to classify")
+    session_id: str | None = Field(None, description="Session ID for context")
 
 
 class TopicClassificationResponse(BaseModel):
@@ -85,7 +87,7 @@ class TopicClassificationResponse(BaseModel):
     text: str = Field(..., description="Classified text")
     topic: TopicCategory = Field(..., description="Detected topic")
     confidence: float = Field(..., description="Confidence score")
-    session_id: Optional[str] = Field(None, description="Session ID")
+    session_id: str | None = Field(None, description="Session ID")
 
 
 class ChatStats(BaseModel):
@@ -94,7 +96,7 @@ class ChatStats(BaseModel):
     total_messages: int = Field(..., description="Total number of messages")
     user_messages: int = Field(..., description="Number of user messages")
     assistant_messages: int = Field(..., description="Number of assistant messages")
-    avg_sentiment: Optional[float] = Field(None, description="Average sentiment score")
+    avg_sentiment: float | None = Field(None, description="Average sentiment score")
     topic_distribution: dict = Field(default_factory=dict, description="Distribution of topics")
     created_at: datetime = Field(..., description="Session creation timestamp")
     last_activity: datetime = Field(..., description="Last activity timestamp") 
